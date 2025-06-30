@@ -9,6 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<CustomerService>();
 
 var app = builder.Build();
 
