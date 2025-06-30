@@ -1,5 +1,6 @@
 ﻿using BlazorApp.Models;
 using System;
+using System.Linq;
 
 namespace BlazorApp.Data
 {
@@ -7,10 +8,20 @@ namespace BlazorApp.Data
     {
         public Task<Customer[]> GetCustomersPaged(int pageCount, int pageSize)
         {
-            return Task.FromResult(Enumerable.Range(1, 5).Select(index => CreateNewRandomCustomer(index.ToString())).ToArray());
+            return Task.FromResult(
+                GetCustomers(pageCount, pageSize)
+                    .Skip((pageCount - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToArray()
+            );
         }
 
         #region Temporary Sample Data Creation
+        private IEnumerable<Customer> GetCustomers(int pageCount, int pageSize)
+        {
+            return Enumerable.Range(1, 30).Select(index => CreateNewRandomCustomer(index.ToString()));
+        }
+
         private char RandomCharacter()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
