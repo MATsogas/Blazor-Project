@@ -6,14 +6,14 @@ namespace BlazorApp.Data
 {
     public class CustomerService
     {
-        private IEnumerable<Customer> _customersSampleData;
+        private List<Customer> _customersSampleData;
 
         public CustomerService()
         {
-            _customersSampleData = GetCustomers(30);
+            _customersSampleData = GetCustomers(30).ToList();
         }
 
-        public Task<Customer[]> GetCustomersPaged(int pageCount, int pageSize)
+        public Task<Customer[]> GetCustomersPaginated(int pageCount, int pageSize)
         {
             return Task.FromResult(
                 _customersSampleData
@@ -21,6 +21,71 @@ namespace BlazorApp.Data
                     .Take(pageSize)
                     .ToArray()
             );
+        }
+
+        public bool Insert(Customer customer)
+        {
+            try
+            {
+                _customersSampleData.Add(customer);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception thrown: {ex.Message} - Customer not added");
+                return false;
+            }
+        }
+
+        public bool Update(Customer customer)
+        {
+            var customerFound = _customersSampleData.FirstOrDefault(x => x == customer);
+            if (customerFound == null)
+            {
+                Console.WriteLine("Customer could not be found - Update not performed!");
+                return false;
+            }
+
+            customerFound = customer;
+            return true;
+        }
+
+        public bool Upsert (Customer customer)
+        {
+            var customerFound = _customersSampleData.FirstOrDefault(x => x == customer);
+            if (customerFound == null) { 
+                return Insert(customer);
+            }
+
+            customerFound = customer;
+            return true;
+        }
+
+        public bool Delete (Customer customer)
+        {
+            return _customersSampleData.Remove(customer);
+        }
+
+        public bool Delete (string id)
+        {
+            var customer = GetCustomerById(id);
+            if (customer == null) {
+                return false;
+            }
+
+            return _customersSampleData.Remove(customer);
+        }
+
+        public Customer GetCustomerById(string id)
+        {
+            var customer = _customersSampleData.FirstOrDefault(x => x.Id == id);
+            if (customer == null)
+            {
+                Console.WriteLine($"Customer with id: {id} not found!");
+                return null;
+            }
+
+            return customer;
         }
 
         #region Temporary Sample Data Creation
