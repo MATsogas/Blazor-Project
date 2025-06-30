@@ -6,3 +6,7 @@ BlazorApp.Client
 BlazorApp/bin/
 
 BlazorApp/obj/
+
+Blazor.Tests/bin
+
+Blazor.Tests/obj
