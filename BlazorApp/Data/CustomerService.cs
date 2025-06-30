@@ -6,10 +6,17 @@ namespace BlazorApp.Data
 {
     public class CustomerService
     {
+        private IEnumerable<Customer> _customersSampleData;
+
+        public CustomerService()
+        {
+            _customersSampleData = GetCustomers(30);
+        }
+
         public Task<Customer[]> GetCustomersPaged(int pageCount, int pageSize)
         {
             return Task.FromResult(
-                GetCustomers(pageCount, pageSize)
+                _customersSampleData
                     .Skip((pageCount - 1) * pageSize)
                     .Take(pageSize)
                     .ToArray()
@@ -17,9 +24,9 @@ namespace BlazorApp.Data
         }
 
         #region Temporary Sample Data Creation
-        private IEnumerable<Customer> GetCustomers(int pageCount, int pageSize)
+        private IEnumerable<Customer> GetCustomers(int customersToGenerate)
         {
-            return Enumerable.Range(1, 30).Select(index => CreateNewRandomCustomer(index.ToString()));
+            return Enumerable.Range(1, customersToGenerate).Select(index => CreateNewRandomCustomer(index.ToString()));
         }
 
         private char RandomCharacter()
