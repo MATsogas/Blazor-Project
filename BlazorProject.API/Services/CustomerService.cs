@@ -24,20 +24,7 @@ namespace BlazorApp.API.Services
 
         public async Task<Customer[]> GetCustomersPaginated(int pageCount, int pageSize)
         {
-            // Test db connection through _context
-            try
-            {
-                if(!_context.Database.EnsureCreated())
-                {
-                    throw new Exception("DB has not been created.");
-                }                
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error accessing db.");
-            }
-
-            return _customersSampleData
+            return _context.Customers
                 .Skip((pageCount - 1) * pageSize)
                 .Take(pageSize)
                 .ToArray();
@@ -47,7 +34,8 @@ namespace BlazorApp.API.Services
         {
             try
             {
-                _customersSampleData.Add(customer);
+                _context.Customers.Add(customer);
+                _context.SaveChanges();
                 return true;
             }
             catch (Exception ex)
@@ -59,31 +47,35 @@ namespace BlazorApp.API.Services
 
         public async Task<bool> Update(Customer customer)
         {
-            var customerFound = _customersSampleData.FirstOrDefault(x => x == customer);
+            var customerFound = _context.Customers.FirstOrDefault(x => x == customer);
             if (customerFound == null)
             {
                 _logger.LogWarning("Customer could not be found - Update not performed!");
                 return false;
             }
 
-            customerFound = customer;
+            _context.Customers.Update(customer);
+            _context.SaveChanges();
             return true;
         }
 
         public async Task<bool> Upsert (Customer customer)
         {
-            var customerFound = _customersSampleData.FirstOrDefault(x => x == customer);
+            var customerFound = _context.Customers.FirstOrDefault(x => x == customer);
             if (customerFound == null) { 
                 return await Insert(customer);
             }
 
-            customerFound = customer;
+            _context.Customers.Update(customer);
+            _context.SaveChanges();
             return true;
         }
 
         public async Task<bool> Delete (Customer customer)
         {
-            return _customersSampleData.Remove(customer);
+            _context.Customers.Remove(customer);
+            _context.SaveChanges();
+            return true;
         }
 
         public async Task<bool> Delete (string id)
@@ -93,12 +85,15 @@ namespace BlazorApp.API.Services
                 return false;
             }
 
-            return _customersSampleData.Remove(customer);
+            _context.Customers.Remove(customer);
+            _context.SaveChanges();
+
+            return true;
         }
 
         public async Task<Customer> GetCustomerById(string id)
         {
-            var customer = _customersSampleData.FirstOrDefault(x => x.Id == id);
+            var customer = _context.Customers.FirstOrDefault(x => x.Id == id);
             if (customer == null)
             {
                 _logger.LogWarning($"Customer with id: {id} not found!");
