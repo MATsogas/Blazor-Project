@@ -54,7 +54,7 @@ namespace BlazorApp.API.Services
                 return false;
             }
 
-            _context.Customers.Update(customer);
+            _context.Entry(customerFound).CurrentValues.SetValues(customer);
             _context.SaveChanges();
             return true;
         }
@@ -66,7 +66,7 @@ namespace BlazorApp.API.Services
                 return await Insert(customer);
             }
 
-            _context.Customers.Update(customer);
+            _context.Entry(customerFound).CurrentValues.SetValues(customer);
             _context.SaveChanges();
             return true;
         }
