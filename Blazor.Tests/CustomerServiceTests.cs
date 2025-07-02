@@ -4,17 +4,31 @@ using BlazorApp.API.Services;
 using Shouldly;
 using Microsoft.Extensions.Logging;
 using BlazorApp.API.Controllers;
+using BlazorApp.API.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.InMemory;
 
 namespace BlazorApp.Tests
 {
     public class CustomerServiceTests
     {
         private readonly CustomerService _customerService;
+        private readonly ApplicationDbContext _context;
 
         public CustomerServiceTests()
         {
             var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<CustomerController>();
-            _customerService = new CustomerService(logger);
+
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+            _context = new ApplicationDbContext(options);
+
+            //Seed test data
+            _context.Customers.AddRange(GenerateCustomers(20));
+            _context.SaveChanges();
+
+            _customerService = new CustomerService(logger, _context);
         }
 
         [Fact]
@@ -126,6 +140,33 @@ namespace BlazorApp.Tests
             var customer = await _customerService.GetCustomerById("not-real-id");
 
             customer.ShouldBeNull();
+        }
+
+        private IEnumerable<Customer> GenerateCustomers(int customersToGenerate)
+        {
+            return Enumerable.Range(1, customersToGenerate).Select(index => CreateNewRandomCustomer(index.ToString()));
+        }
+
+        private char RandomCharacter()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return chars[Random.Shared.Next(0, chars.Length)];
+        }
+
+        private Customer CreateNewRandomCustomer(string id)
+        {
+            return new Customer
+            {
+                Id = id,
+                Address = $"Sample Road {RandomCharacter()} {Random.Shared.Next(1, 300)}",
+                City = $"Sample City {RandomCharacter()}",
+                CompanyName = $"Company {RandomCharacter()}",
+                ContactName = $"Dr. {RandomCharacter()}",
+                Country = $"Country {RandomCharacter()}",
+                Phone = string.Join("", Enumerable.Repeat(1, 10).Select(x => Random.Shared.Next(0, 9))),
+                PostalCode = string.Join("", Enumerable.Repeat(1, 5).Select(x => Random.Shared.Next(0, 9))),
+                Region = $"Region {RandomCharacter()}"
+            };
         }
     }
 }
