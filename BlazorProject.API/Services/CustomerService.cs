@@ -1,22 +1,42 @@
 ﻿using BlazorApp.Models;
 using BlazorApp.API.Controllers;
+using Microsoft.EntityFrameworkCore;
+using BlazorApp.API.Models;
 
 namespace BlazorApp.API.Services
 {
     public class CustomerService
     {
-        private List<Customer> _customersSampleData;
         private readonly ILogger<CustomerController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public CustomerService(ILogger<CustomerController> logger)
+        private List<Customer> _customersSampleData;
+
+        public CustomerService(
+            ILogger<CustomerController> logger, 
+            ApplicationDbContext context)
         {
             _logger = logger;
+            _context = context;
 
             _customersSampleData = GetCustomers(30).ToList();
         }
 
         public async Task<Customer[]> GetCustomersPaginated(int pageCount, int pageSize)
         {
+            // Test db connection through _context
+            try
+            {
+                if(!_context.Database.EnsureCreated())
+                {
+                    throw new Exception("DB has not been created.");
+                }                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error accessing db.");
+            }
+
             return _customersSampleData
                 .Skip((pageCount - 1) * pageSize)
                 .Take(pageSize)
