@@ -56,7 +56,7 @@ else
     {
         // Simulate asynchronous loading to demonstrate streaming rendering
         await Task.Delay(500);
-        customers = await CustomerService.GetCustomersPaged(0, 5);
+        customers = await CustomerService.GetCustomersPaginated(0, 5);
     }
 
 
