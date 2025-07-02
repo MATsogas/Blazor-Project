@@ -1,5 +1,6 @@
 using BlazorApp.Data;
 using BlazorApp.Models;
+using BlazorApp.Services;
 using Shouldly;
 
 namespace BlazorApp.Tests

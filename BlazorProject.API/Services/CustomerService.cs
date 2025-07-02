@@ -1,29 +1,29 @@
 ﻿using BlazorApp.Models;
-using System;
-using System.Linq;
+using BlazorApp.API.Controllers;
 
-namespace BlazorApp.Data
+namespace BlazorApp.API.Services
 {
     public class CustomerService
     {
         private List<Customer> _customersSampleData;
+        private readonly ILogger<CustomerController> _logger;
 
-        public CustomerService()
+        public CustomerService(ILogger<CustomerController> logger)
         {
+            _logger = logger;
+
             _customersSampleData = GetCustomers(30).ToList();
         }
 
-        public Task<Customer[]> GetCustomersPaginated(int pageCount, int pageSize)
+        public async Task<Customer[]> GetCustomersPaginated(int pageCount, int pageSize)
         {
-            return Task.FromResult(
-                _customersSampleData
-                    .Skip((pageCount - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToArray()
-            );
+            return _customersSampleData
+                .Skip((pageCount - 1) * pageSize)
+                .Take(pageSize)
+                .ToArray();
         }
 
-        public bool Insert(Customer customer)
+        public async Task<bool> Insert(Customer customer)
         {
             try
             {
@@ -32,17 +32,17 @@ namespace BlazorApp.Data
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception thrown: {ex.Message} - Customer not added");
+                _logger.LogError(ex, "Error adding customer");
                 return false;
             }
         }
 
-        public bool Update(Customer customer)
+        public async Task<bool> Update(Customer customer)
         {
             var customerFound = _customersSampleData.FirstOrDefault(x => x == customer);
             if (customerFound == null)
             {
-                Console.WriteLine("Customer could not be found - Update not performed!");
+                _logger.LogWarning("Customer could not be found - Update not performed!");
                 return false;
             }
 
@@ -50,25 +50,25 @@ namespace BlazorApp.Data
             return true;
         }
 
-        public bool Upsert (Customer customer)
+        public async Task<bool> Upsert (Customer customer)
         {
             var customerFound = _customersSampleData.FirstOrDefault(x => x == customer);
             if (customerFound == null) { 
-                return Insert(customer);
+                return await Insert(customer);
             }
 
             customerFound = customer;
             return true;
         }
 
-        public bool Delete (Customer customer)
+        public async Task<bool> Delete (Customer customer)
         {
             return _customersSampleData.Remove(customer);
         }
 
-        public bool Delete (string id)
+        public async Task<bool> Delete (string id)
         {
-            var customer = GetCustomerById(id);
+            var customer = await GetCustomerById(id);
             if (customer == null) {
                 return false;
             }
@@ -76,12 +76,12 @@ namespace BlazorApp.Data
             return _customersSampleData.Remove(customer);
         }
 
-        public Customer GetCustomerById(string id)
+        public async Task<Customer> GetCustomerById(string id)
         {
             var customer = _customersSampleData.FirstOrDefault(x => x.Id == id);
             if (customer == null)
             {
-                Console.WriteLine($"Customer with id: {id} not found!");
+                _logger.LogWarning($"Customer with id: {id} not found!");
                 return null;
             }
 

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorApp\BlazorApp.csproj" />
+    <ProjectReference Include="..\BlazorProject.API\BlazorApp.API.csproj" />
   </ItemGroup>
 
   <ItemGroup>

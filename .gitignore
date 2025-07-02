@@ -10,3 +10,7 @@ BlazorApp/obj/
 Blazor.Tests/bin
 
 Blazor.Tests/obj
+
+BlazorProject.API/bin
+
+BlazorProject.API/obj
