@@ -1,7 +1,9 @@
-using BlazorApp.Data;
+
 using BlazorApp.Models;
-using BlazorApp.Services;
+using BlazorApp.API.Services;
 using Shouldly;
+using Microsoft.Extensions.Logging;
+using BlazorApp.API.Controllers;
 
 namespace BlazorApp.Tests
 {
@@ -11,24 +13,25 @@ namespace BlazorApp.Tests
 
         public CustomerServiceTests()
         {
-            _customerService = new CustomerService();
+            var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<CustomerController>();
+            _customerService = new CustomerService(logger);
         }
 
         [Fact]
-        public void Insert_ShouldAddCustomer()
+        public async Task Insert_ShouldAddCustomer()
         {
             var newCustomer = new Customer { Id = "999", ContactName = "Test Contact" };
 
-            var result = _customerService.Insert(newCustomer);
+            var result = await _customerService.Insert(newCustomer);
 
             result.ShouldBeTrue();
-            var inserted = _customerService.GetCustomerById("999");
+            var inserted = await _customerService.GetCustomerById("999");
             inserted.ShouldNotBeNull();
             inserted.ShouldBe(newCustomer);
         }
 
         [Fact]
-        public async void GetCustomersPaginated_ShouldReturnCorrectPage()
+        public async Task GetCustomersPaginated_ShouldReturnCorrectPage()
         {
             var page = await _customerService.GetCustomersPaginated(2, 5);
 
@@ -37,86 +40,90 @@ namespace BlazorApp.Tests
         }
 
         [Fact]
-        public void Update_ShouldUpdateExistingCustomer()
+        public async Task Update_ShouldUpdateExistingCustomer()
         {
-            var customer = _customerService.GetCustomerById("1");
+            var customer = await _customerService.GetCustomerById("1");
             customer.ContactName = "Updated Name";
 
-            var result = _customerService.Update(customer);
+            var result = await _customerService.Update(customer);
 
             result.ShouldBeTrue();
-            var updated = _customerService.GetCustomerById("1");
+            var updated = await _customerService.GetCustomerById("1");
             updated.ContactName.ShouldBe("Updated Name");
         }
 
         [Fact]
-        public void Update_ShouldFailWhenCustomerNotFound()
+        public async Task Update_ShouldFailWhenCustomerNotFound()
         {
             var nonExistentCustomer = new Customer { Id = "999" };
 
-            var result = _customerService.Update(nonExistentCustomer);
+            var result = await _customerService.Update(nonExistentCustomer);
 
             result.ShouldBeFalse();
         }
 
         [Fact]
-        public void Upsert_ShouldInsertIfNotExists()
+        public async Task Upsert_ShouldInsertIfNotExists()
         {
             var newCustomer = new Customer { Id = "777", ContactName = "Upserted" };
 
-            var result = _customerService.Upsert(newCustomer);
+            var result = await _customerService.Upsert(newCustomer);
 
             result.ShouldBeTrue();
-            var upserted = _customerService.GetCustomerById("777");
+            var upserted = await _customerService.GetCustomerById("777");
             upserted.ShouldNotBeNull();
             upserted.ShouldBe(newCustomer);
         }
 
         [Fact]
-        public void Upsert_ShouldUpdateIfExists()
+        public async Task Upsert_ShouldUpdateIfExists()
         {
-            var customer = _customerService.GetCustomerById("2");
+            var customer = await _customerService.GetCustomerById("2");
             customer.ContactName = "Upserted Name";
 
-            var result = _customerService.Upsert(customer);
+            var result = await _customerService.Upsert(customer);
 
             result.ShouldBeTrue();
-            _customerService.GetCustomerById("2").ContactName.ShouldBe("Upserted Name");
+            var updatedCustomer = await _customerService.GetCustomerById("2");
+            updatedCustomer.ShouldNotBeNull();
+            updatedCustomer.ContactName.ShouldBe("Upserted Name");
         }
 
         [Fact]
-        public void Delete_ByObject_ShouldRemoveCustomer()
+        public async Task Delete_ByObject_ShouldRemoveCustomer()
         {
-            var customer = _customerService.GetCustomerById("3");
+            var customer = await _customerService.GetCustomerById("3");
 
-            var result = _customerService.Delete(customer);
+            var result = await _customerService.Delete(customer);
 
             result.ShouldBeTrue();
-            _customerService.GetCustomerById("3").ShouldBeNull();
+            customer = await _customerService.GetCustomerById("3");
+            customer.ShouldBeNull();
         }
 
         [Fact]
-        public void Delete_ById_ShouldRemoveCustomer()
+        public async Task Delete_ById_ShouldRemoveCustomer()
         {
-            var result = _customerService.Delete("4");
+            var result = await _customerService.Delete("4");
 
             result.ShouldBeTrue();
-            _customerService.GetCustomerById("4").ShouldBeNull();
+            var customer = await _customerService.GetCustomerById("4");
+            customer.ShouldBeNull();
         }
 
         [Fact]
-        public void GetCustomerById_ShouldReturnCustomerIfExists()
+        public async Task GetCustomerById_ShouldReturnCustomerIfExists()
         {
-            var customer = _customerService.GetCustomerById("5");
+            var customer = await _customerService.GetCustomerById("5");
 
             customer.ShouldNotBeNull();
             customer.Id.ShouldBe("5");
         }
 
         [Fact]
-        public void GetCustomerById_ShouldReturnNullIfNotExists()
+        public async Task GetCustomerById_ShouldReturnNullIfNotExists()
         {
-            var customer = _customerService.GetCustomerById("not-real-id");
+            var customer = await _customerService.GetCustomerById("not-real-id");
 
             customer.ShouldBeNull();
         }
