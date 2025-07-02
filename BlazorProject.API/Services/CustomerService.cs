@@ -10,16 +10,12 @@ namespace BlazorApp.API.Services
         private readonly ILogger<CustomerController> _logger;
         private readonly ApplicationDbContext _context;
 
-        private List<Customer> _customersSampleData;
-
         public CustomerService(
             ILogger<CustomerController> logger, 
             ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
-
-            _customersSampleData = GetCustomers(30).ToList();
         }
 
         public async Task<Customer[]> GetCustomersPaginated(int pageCount, int pageSize)
@@ -102,34 +98,5 @@ namespace BlazorApp.API.Services
 
             return customer;
         }
-
-        #region Temporary Sample Data Creation
-        private IEnumerable<Customer> GetCustomers(int customersToGenerate)
-        {
-            return Enumerable.Range(1, customersToGenerate).Select(index => CreateNewRandomCustomer(index.ToString()));
-        }
-
-        private char RandomCharacter()
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            return chars[Random.Shared.Next(0, chars.Length)];
-        }
-
-        private Customer CreateNewRandomCustomer(string id)
-        {
-            return new Customer
-            {
-                Id = id,
-                Address = $"Sample Road {RandomCharacter()} {Random.Shared.Next(1, 300)}",
-                City = $"Sample City {RandomCharacter()}",
-                CompanyName = $"Company {RandomCharacter()}",
-                ContactName = $"Dr. {RandomCharacter()}",
-                Country = $"Country {RandomCharacter()}",
-                Phone = string.Join("", Enumerable.Repeat(1, 10).Select(x => Random.Shared.Next(0, 9))),
-                PostalCode = string.Join("", Enumerable.Repeat(1, 5).Select(x => Random.Shared.Next(0, 9))),
-                Region = $"Region {RandomCharacter()}"
-            };
-        }
-        #endregion
     }
 }
