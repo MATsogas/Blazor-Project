@@ -50,19 +50,19 @@ namespace BlazorApp.Tests
             var page = await _customerService.GetCustomersPaginated(2, 5);
 
             page.Length.ShouldBe(5);
-            page.First().Id.ShouldBe("6");
+            page.First().Id.ShouldBe("006");
         }
 
         [Fact]
         public async Task Update_ShouldUpdateExistingCustomer()
         {
-            var customer = await _customerService.GetCustomerById("1");
+            var customer = await _customerService.GetCustomerById("001");
             customer.ContactName = "Updated Name";
 
             var result = await _customerService.Update(customer);
 
             result.ShouldBeTrue();
-            var updated = await _customerService.GetCustomerById("1");
+            var updated = await _customerService.GetCustomerById("001");
             updated.ContactName.ShouldBe("Updated Name");
         }
 
@@ -92,13 +92,13 @@ namespace BlazorApp.Tests
         [Fact]
         public async Task Upsert_ShouldUpdateIfExists()
         {
-            var customer = await _customerService.GetCustomerById("2");
+            var customer = await _customerService.GetCustomerById("002");
             customer.ContactName = "Upserted Name";
 
             var result = await _customerService.Upsert(customer);
 
             result.ShouldBeTrue();
-            var updatedCustomer = await _customerService.GetCustomerById("2");
+            var updatedCustomer = await _customerService.GetCustomerById("002");
             updatedCustomer.ShouldNotBeNull();
             updatedCustomer.ContactName.ShouldBe("Upserted Name");
         }
@@ -106,32 +106,32 @@ namespace BlazorApp.Tests
         [Fact]
         public async Task Delete_ByObject_ShouldRemoveCustomer()
         {
-            var customer = await _customerService.GetCustomerById("3");
+            var customer = await _customerService.GetCustomerById("003");
 
             var result = await _customerService.Delete(customer);
 
             result.ShouldBeTrue();
-            customer = await _customerService.GetCustomerById("3");
+            customer = await _customerService.GetCustomerById("003");
             customer.ShouldBeNull();
         }
 
         [Fact]
         public async Task Delete_ById_ShouldRemoveCustomer()
         {
-            var result = await _customerService.Delete("4");
+            var result = await _customerService.Delete("004");
 
             result.ShouldBeTrue();
-            var customer = await _customerService.GetCustomerById("4");
+            var customer = await _customerService.GetCustomerById("004");
             customer.ShouldBeNull();
         }
 
         [Fact]
         public async Task GetCustomerById_ShouldReturnCustomerIfExists()
         {
-            var customer = await _customerService.GetCustomerById("5");
+            var customer = await _customerService.GetCustomerById("005");
 
             customer.ShouldNotBeNull();
-            customer.Id.ShouldBe("5");
+            customer.Id.ShouldBe("005");
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace BlazorApp.Tests
 
         private IEnumerable<Customer> GenerateCustomers(int customersToGenerate)
         {
-            return Enumerable.Range(1, customersToGenerate).Select(index => CreateNewRandomCustomer(index.ToString()));
+            return Enumerable.Range(1, customersToGenerate).Select(index => CreateNewRandomCustomer(index.ToString("D3")));
         }
 
         private char RandomCharacter()
